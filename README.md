@@ -1,98 +1,93 @@
-Terraform module which creates Anycast Eip on Alibaba Cloud.
+Terraform module for Anycast EIP on Alibaba Cloud
 
-terraform-alicloud-eip-anycast
-=====================================================================
+# terraform-alicloud-eipanycast
 
-English | [简体中文](https://github.com/terraform-alicloud-modules/terraform-alicloud-eip-anycast/blob/master/README-CN.md)
+English | [简体中文](https://github.com/alibabacloud-automation/terraform-alicloud-eipanycast/blob/main/README-CN.md)
 
-Terraform module which creates Anycast Eip on Alibaba Cloud.
+Terraform module which creates [Anycast Elastic IP Address (Anycast EIP)](https://www.alibabacloud.com/help/en/anycast-eip/latest/what-is-anycast-eip) resources on Alibaba Cloud.
 
-These types of resources are supported:
 
-* [Eipanycast_Anycast_Eip_Address](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/eipanycast_anycast_eip_address)
-* [Eipanycast_Anycast_Eip_Address_Attachment](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/eipanycast_anycast_eip_address_attachment)
+## Usage
 
+```hcl
+module "eipanycast" {
+  source = "alibabacloud-automation/eipanycast/alicloud"
+
+  create                   = true
+  service_location         = "international"
+  bind_instance_id         = "your-slb-instance-id"
+  bind_instance_region_id  = "cn-hongkong"
+  anycast_eip_address_name = "my-anycast-eip"
+  bandwidth                = 200
+  description              = "Anycast EIP for global load balancing"
+}
+```
+
+## Examples
+
+* [Complete Example](https://github.com/alibabacloud-automation/terraform-alicloud-eipanycast/tree/main/examples/complete)
+
+<!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
 |------|---------|
-| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13.0 |
-| <a name="requirement_alicloud"></a> [alicloud](#requirement\_alicloud) | >= 1.131.0 |
+| <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 0.13 |
+| <a name="requirement_alicloud"></a> [alicloud](#requirement\_alicloud) | >= 1.0 |
 
 ## Providers
 
 | Name | Version |
 |------|---------|
-| <a name="provider_alicloud"></a> [alicloud](#provider\_alicloud) | >= 1.131.0 |
+| <a name="provider_alicloud"></a> [alicloud](#provider\_alicloud) | >= 1.0 |
 
-## Usage
+## Modules
 
-```hcl
-provider "alicloud" {
-  region = "cn-hangzhou"
-}
+No modules.
 
-provider "alicloud" {
-  region = "cn-hongkong"
-  alias = "backend"
-}
+## Resources
 
-data "alicloud_zones" "default" {
-  provider = alicloud.backend
-  available_resource_creation = "VSwitch"
-}
+| Name | Type |
+|------|------|
+| [alicloud_eipanycast_anycast_eip_address.eip_address](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/eipanycast_anycast_eip_address) | resource |
+| [alicloud_eipanycast_anycast_eip_address_attachment.eip_address_attachment](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs/resources/eipanycast_anycast_eip_address_attachment) | resource |
 
-data "alicloud_regions" "default" {
-  provider = alicloud.backend
-  current = true
-}
+## Inputs
 
-resource "alicloud_vpc" "default" {
-  provider = alicloud.backend
-  vpc_name   = var.vpc_name
-  cidr_block = var.vpc_cidr_block
-}
+| Name | Description | Type | Default | Required |
+|------|-------------|------|---------|:--------:|
+| <a name="input_anycast_eip_address_name"></a> [anycast\_eip\_address\_name](#input\_anycast\_eip\_address\_name) | The name of any cast service. | `string` | `null` | no |
+| <a name="input_bandwidth"></a> [bandwidth](#input\_bandwidth) | The bandwidth of eip anycast service. | `number` | `null` | no |
+| <a name="input_bind_instance_id"></a> [bind\_instance\_id](#input\_bind\_instance\_id) | The instance ID to bind to the EIP Anycast service. This should typically be a SLB instance ID. | `string` | n/a | yes |
+| <a name="input_bind_instance_region_id"></a> [bind\_instance\_region\_id](#input\_bind\_instance\_region\_id) | The region ID of the instance to bind to the EIP Anycast service. | `string` | n/a | yes |
+| <a name="input_create"></a> [create](#input\_create) | Whether to create resources in module. | `bool` | `false` | no |
+| <a name="input_description"></a> [description](#input\_description) | The description of any cast service. | `string` | `null` | no |
+| <a name="input_internet_charge_type"></a> [internet\_charge\_type](#input\_internet\_charge\_type) | The charge type of EIP Anycast service. | `string` | `"PayByBandwidth"` | no |
+| <a name="input_service_location"></a> [service\_location](#input\_service\_location) | The location of any cast service. | `string` | `"international"` | no |
 
-resource "alicloud_vswitch" "default" {
-  provider = alicloud.backend
-  vpc_id       = alicloud_vpc.default.id
-  cidr_block   = var.vswitch_cidr_block
-  zone_id      = data.alicloud_zones.default.zones.0.id
-  vswitch_name = var.vswitch_name
-}
+## Outputs
 
-resource "alicloud_slb" "default" {
-  provider = alicloud.backend
-  load_balancer_name = var.slb_instance_name
-  load_balancer_spec  = var.load_balancer_spec
-  vswitch_id          = alicloud_vswitch.default.id
-}
+| Name | Description |
+|------|-------------|
+| <a name="output_this_eip_anycast_service_id"></a> [this\_eip\_anycast\_service\_id](#output\_this\_eip\_anycast\_service\_id) | The EIP Anycast service ID. |
+<!-- END_TF_DOCS -->
 
-module "example" {
-  source = "terraform-alicloud-modules/eip-anycast/alicloud"
-  create = true
-  eip_anycast_service_location = "international"
-  eip_anycast_service_bind_instance_id = alicloud_slb.default.id
-  eip_anycast_service_bind_instance_region_id = data.alicloud_regions.default.regions.0.id
-}
-```
+## Submit Issues
 
-Submit Issues
--------------
 If you have any problems when using this module, please opening a [provider issue](https://github.com/aliyun/terraform-provider-alicloud/issues/new) and let us know.
 
 **Note:** There does not recommend to open an issue on this repo.
 
-Authors
--------
+## Authors
+
 Created and maintained by Alibaba Cloud Terraform Team(terraform@alibabacloud.com)
 
-License
-----
+## License
+
 Apache 2 Licensed. See LICENSE for full details.
 
-Reference
----------
+## Reference
+
 * [Terraform-Provider-Alicloud Github](https://github.com/aliyun/terraform-provider-alicloud)
 * [Terraform-Provider-Alicloud Release](https://releases.hashicorp.com/terraform-provider-alicloud/)
 * [Terraform-Provider-Alicloud Docs](https://registry.terraform.io/providers/aliyun/alicloud/latest/docs)
